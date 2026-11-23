@@ -1,0 +1,34 @@
+Makefile
+  s_04c09e151ef547::t_45e02cc1cd3ec4 1,6-18,23-31,34-37
+  s_04c09e151ef547::t_b61bd02752d67e 38
+DEVELOPMENT_NOTES.md
+  s_04c09e151ef547::t_7c1d9c38674b93 218-296
+scripts/fetch_data.py
+  s_04c09e151ef547::t_7bd38a4fde2b26 12,18
+  s_04c09e151ef547::t_7f2e2ef77722ad 167-176,178-192,202-210,212-214,216,229,246,248,253,255-274,280-283
+  s_04c09e151ef547::t_10f5445a70e52e 30-33,39-41,43-56,70-161
+  s_04c09e151ef547::t_14136e3c080f8e 162-163
+README.md
+  s_04c09e151ef547::t_fe2ccd3eee4b8c 56,232-248,265
+  s_04c09e151ef547::t_19065d3556a3f4 29-30,35-36,45-55
+  s_04c09e151ef547::t_03c62db0ff0bfc 90-129
+  s_04c09e151ef547::t_a78920560514bc 286-291
+  s_04c09e151ef547::t_d00ba1b035bfdd 57
+  s_04c09e151ef547::t_0f4cbd1f5c8b97 266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "65e796d155d959ead7aa7eb432f9af770c409894",
+  "prompts": {},
+  "sessions": {
+    "s_04c09e151ef547": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44f90960-6eb8-4a4b-a58b-eaa29887cd98",
+        "model": "claude-sonnet-4-5-20250929"
+      },
+      "human_author": "FMontesinosE <franmontesinosde@gmail.com>"
+    }
+  }
+}
