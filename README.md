@@ -26,18 +26,33 @@ flowchart TB
 
 ## Quick Start
 
+### Quick Test (Recommended for First Run)
+
 ```bash
 # Install dependencies
 make install
 
-# Download reference genome (chr21, chr22)
-make fetch-data
+# Download test data (chr21-22 only, ~1.5 hours)
+make fetch-data-test
 
 # Train the model
 make train
 
 # Start the API server
 make serve
+```
+
+### Production Scale (Full ENCODE Database)
+
+```bash
+# Download ALL chromosomes + ALL eCLIP experiments (WARNING: ~40GB+ genome, many hours)
+make fetch-data-full
+
+# Or download specific RBP target
+python -m scripts.fetch_data --target RBFOX2
+
+# Or download only genome (no narrowPeak files)
+make fetch-genome
 ```
 
 Test the API:
@@ -71,6 +86,46 @@ Evaluated on chr22 held-out test set:
 | Throughput | 2,500 sequences/sec |
 
 Benchmarked on Intel Xeon E5-2686 v4 @ 2.3GHz (CPU only).
+
+## Data Acquisition
+
+The `scripts/fetch_data.py` script automatically downloads data from ENCODE and UCSC:
+
+### Quick Test Mode (Default)
+```bash
+make fetch-data-test
+# Downloads: chr21, chr22 reference genome + test eCLIP experiments
+# Time: ~1.5 hours | Size: ~90MB
+```
+
+### Full Production Mode
+```bash
+make fetch-data-full
+# Downloads: ALL chromosomes (chr1-22, chrX, chrY) + ALL eCLIP experiments
+# Time: Several hours | Size: ~40GB+ genome + variable narrowPeak files
+```
+
+### Custom Options
+```bash
+# Specific RBP target
+python -m scripts.fetch_data --target RBFOX2
+
+# Limit number of experiments (for testing)
+python -m scripts.fetch_data --target RBFOX2 --limit 5
+
+# Genome only (skip narrowPeak files)
+python -m scripts.fetch_data --chromosomes-only
+
+# Force re-download
+python -m scripts.fetch_data --force
+```
+
+The script:
+- Queries ENCODE REST API for released eCLIP experiments
+- Downloads narrowPeak files (prefers replicated peaks)
+- Downloads GRCh38 reference genome from UCSC
+- Verifies downloads with SHA-256 checksums
+- Resumes interrupted downloads automatically
 
 ## Data Pipeline
 
@@ -174,7 +229,23 @@ make docker-down
 
 ## Training Custom Models
 
-Train on your own eCLIP data:
+### Using Downloaded ENCODE Data
+
+After downloading with `make fetch-data-full`:
+
+```bash
+# Train on all downloaded eCLIP experiments
+rbp-train \
+  --bed data/raw/*.bed \
+  --fasta data/raw/GRCh38.fa \
+  --epochs 50 \
+  --batch-size 64 \
+  --lr 0.001
+```
+
+### Using Your Own Data
+
+Train on custom eCLIP data:
 
 ```bash
 rbp-train \
@@ -190,6 +261,8 @@ The model automatically:
 - Saves training baseline statistics
 - Registers the model in MLflow Model Registry
 - Sets the "champion" alias for production deployment
+
+**Note**: Training on the full ENCODE database with all chromosomes and experiments will require significant compute time. Consider using GPU acceleration for production-scale training.
 
 ## Requirements
 
@@ -210,10 +283,12 @@ GitHub Actions runs on every push:
 
 ## Notes
 
-- Chromosome-level splits prevent data leakage (peaks on the same chromosome may be correlated)
-- Early stopping uses validation AUPRC as the primary metric
-- SQLite MLflow backend is suitable for development; use PostgreSQL in production
-- CPU training is slow; GPU recommended for large datasets
+- **Data Scale**: Use `--test-mode` for quick validation (chr21-22 only). Production training requires full genome download (~40GB).
+- **Chromosome-level splits** prevent data leakage (peaks on the same chromosome may be correlated)
+- **Early stopping** uses validation AUPRC as the primary metric
+- **MLflow backend**: SQLite suitable for development; use PostgreSQL in production
+- **GPU acceleration**: CPU training is slow; GPU strongly recommended for full ENCODE dataset
+- **Download resumption**: The fetch script verifies checksums and skips already-downloaded files
 
 ## License
 

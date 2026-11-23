@@ -1,24 +1,40 @@
-.PHONY: install fetch-data train serve lint typecheck test docker-up docker-down clean help
+.PHONY: install fetch-data fetch-data-test fetch-data-full fetch-genome train serve lint typecheck test docker-up docker-down clean help
 
 help:
 	@echo "RBP MLOps Service - Available Commands"
 	@echo "======================================"
-	@echo "install      : Install package and dependencies"
-	@echo "fetch-data   : Download ENCODE data and reference genome"
-	@echo "train        : Train RBP binding classifier"
-	@echo "serve        : Start FastAPI inference server"
-	@echo "lint         : Run ruff linter and formatter checks"
-	@echo "typecheck    : Run mypy type checker"
-	@echo "test         : Run pytest test suite"
-	@echo "docker-up    : Start Docker services (MLflow + API)"
-	@echo "docker-down  : Stop Docker services"
-	@echo "clean        : Remove generated files and caches"
+	@echo "install          : Install package and dependencies"
+	@echo "fetch-data-test  : Download test data (chr21-22 only, quick)"
+	@echo "fetch-data-full  : Download FULL ENCODE eCLIP database (WARNING: large!)"
+	@echo "fetch-data       : Alias for fetch-data-test"
+	@echo "fetch-genome     : Download only reference genome (skip narrowPeak)"
+	@echo "train            : Train RBP binding classifier"
+	@echo "serve            : Start FastAPI inference server"
+	@echo "lint             : Run ruff linter and formatter checks"
+	@echo "typecheck        : Run mypy type checker"
+	@echo "test             : Run pytest test suite"
+	@echo "docker-up        : Start Docker services (MLflow + API)"
+	@echo "docker-down      : Stop Docker services"
+	@echo "clean            : Remove generated files and caches"
 
 install:
 	pip install -e ".[dev]"
 
-fetch-data:
+fetch-data-test:
+	python -m scripts.fetch_data --test-mode
+
+fetch-data-full:
+	@echo "WARNING: This will download the entire ENCODE eCLIP database"
+	@echo "This includes all chromosomes (chr1-22, chrX, chrY) and all eCLIP experiments"
+	@echo "Dataset size: ~40GB genome + variable narrowPeak files"
+	@echo "Press Ctrl+C to cancel, or wait 5 seconds to proceed..."
+	@sleep 5
 	python -m scripts.fetch_data
+
+fetch-data: fetch-data-test
+
+fetch-genome:
+	python -m scripts.fetch_data --chromosomes-only
 
 train:
 	rbp-train \

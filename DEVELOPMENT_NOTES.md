@@ -215,6 +215,85 @@ curl -X POST http://localhost:8000/predict \
 4. **Limited Error Recovery**: Some operations fail without retry logic
 5. **No Distributed Training**: Single-machine only
 
+## Production-Scale Updates (Latest)
+
+### Enhanced Data Fetching
+
+**File**: `scripts/fetch_data.py`
+
+**New Capabilities**:
+- **Full ENCODE Database Support**: Query and download all released eCLIP experiments via ENCODE REST API
+- **All Chromosomes**: Download chr1-22, chrX, chrY (full GRCh38 genome, ~40GB)
+- **Automated narrowPeak Download**: No manual steps required, directly downloads BED files
+- **RBP Target Filtering**: `--target RBFOX2` to download specific proteins
+- **Experiment Limiting**: `--limit N` for testing with subset
+- **Progress Tracking**: tqdm progress bars for all downloads
+- **Resume Support**: SHA-256 checksum verification, skips existing files
+
+**Usage Modes**:
+```bash
+# Quick test (chr21-22 only, ~90MB, 1-2 hours)
+make fetch-data-test
+
+# Full production (all chr + all eCLIP, ~40GB+, several hours)
+make fetch-data-full
+
+# Specific target
+python -m scripts.fetch_data --target RBFOX2
+
+# Custom limit for testing
+python -m scripts.fetch_data --target RBFOX2 --limit 5
+```
+
+**API Integration**:
+- Queries `https://www.encodeproject.org/search/` with filters:
+  - `type=Experiment`
+  - `assay_title=eCLIP`
+  - `status=released`
+  - `files.file_type=bed narrowPeak`
+  - `organism=Homo sapiens`
+- Prefers "replicated peaks" over "peaks" output type
+- Downloads via direct ENCODE file URLs (`/files/ENCFF*/@@download`)
+- Error handling with retry logic (3 attempts, exponential backoff)
+
+**Tested**: Successfully queries ENCODE API, found 2 RBFOX2 experiments as expected
+
+### Documentation Updates
+
+**Files**: `README.md`, `Makefile`
+
+**Changes**:
+- New "Data Acquisition" section with usage examples
+- Updated "Quick Start" with test vs. production modes
+- Enhanced "Training Custom Models" for full-scale training
+- Updated "Notes" section with scale considerations
+- New Makefile targets: `fetch-data-test`, `fetch-data-full`, `fetch-genome`
+
+### Production Training Considerations
+
+For full ENCODE database:
+1. **Dataset Size**: Expect 100K-1M+ peak sequences across all experiments
+2. **Training Time**: 50 epochs with full data could take days on CPU
+3. **Memory Requirements**: 16GB+ RAM recommended for data loading
+4. **Recommended Hardware**:
+   - GPU: NVIDIA with 8GB+ VRAM (Tesla T4, RTX 3070+)
+   - CPU: 8+ cores for data preprocessing
+   - Storage: 100GB+ for genome + experiments + models
+5. **Optimizations Needed**:
+   - Enable DataLoader `num_workers=4-8` for parallel loading
+   - Use `pin_memory=True` for GPU training
+   - Consider mixed precision training (torch.cuda.amp)
+   - Implement gradient accumulation for effective larger batch sizes
+   - Add distributed training for multi-GPU setups
+
+### Validation
+
+- ✓ `ruff check scripts/fetch_data.py` - All checks passed
+- ✓ ENCODE API query test - Found 2 RBFOX2 experiments
+- ✓ Function unit test - query_encode_eclip() works correctly
+- ✓ Help output - All CLI options documented
+- ✓ Type hints - Python 3.10+ union syntax (`str | None`)
+
 ## Next Steps
 
 1. Add GPU support and mixed precision training
