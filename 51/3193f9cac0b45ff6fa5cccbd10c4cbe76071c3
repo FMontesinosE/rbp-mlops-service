@@ -1,0 +1,19 @@
+README.md
+  s_04c09e151ef547::t_d4f4cff8a2b6bc 229,231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "513193f9cac0b45ff6fa5cccbd10c4cbe76071c3",
+  "prompts": {},
+  "sessions": {
+    "s_04c09e151ef547": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "44f90960-6eb8-4a4b-a58b-eaa29887cd98",
+        "model": "claude-sonnet-4-5-20250929"
+      },
+      "human_author": "FMontesinosE <franmontesinosde@gmail.com>"
+    }
+  }
+}
