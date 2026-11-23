@@ -226,8 +226,8 @@ If you use this code in your research, please cite:
 ```bibtex
 @software{rbp_mlops_2024,
   title={RBP MLOps: Production ML Pipeline for RNA-Binding Protein Prediction},
-  author={Your Name},
+  author={FMontesinosE},
   year={2024},
-  url={https://github.com/yourusername/rbp-mlops}
+  url={https://github.com/FMontesinosE/rbp-mlops-service}
 }
 ```
